@@ -69,12 +69,23 @@ export default async function appleTv({ name, year, language, outPath }) {
 
     await new Promise((resolve) => setTimeout(resolve, 5000));
 
-    await page.waitForSelector("#uts-col-Trailers");
+    try {
+      await page.waitForSelector("#uts-col-Trailers", {
+        timeout: 10000,
+      });
+    } catch (error) {
+      browser.close();
+      load.info("[Apple TV] Trailer not found. Try use another language");
+      load.stop();
+      return false;
+    }
+
     let trailersSection = await page.$("#uts-col-Trailers");
 
     if (!trailersSection) {
       browser.close();
       load.info("[Apple TV] Trailer not found. Try use another language");
+      load.stop();
       return false;
     }
 
