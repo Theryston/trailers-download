@@ -30,9 +30,9 @@ const services = getServices();
 
 for (const service of services) {
   print.info(`Trying to find the trailer on ${service.name}`);
-  const out = await service.func({ ...parameters, outPath });
+  const hasFound = await service.func({ ...parameters, outPath });
 
-  if (out) {
+  if (hasFound) {
     break;
   }
 }
