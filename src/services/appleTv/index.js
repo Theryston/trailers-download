@@ -29,7 +29,7 @@ export default async function appleTv({ name, year, language, outPath }) {
       const results = anchors.map((anchor) => {
         return {
           href: anchor.href,
-          text: anchor.text.split("|")[0].trim(),
+          text: anchor.text.split("|")[0].trim().replace("Assistir ", ""),
         };
       });
       return results.filter((result) =>
