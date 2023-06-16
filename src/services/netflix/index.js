@@ -176,6 +176,10 @@ export default async function netflix({ name, year, language, outPath }) {
       const ffmpegCommand = `${ffmpegPath} -i ${videoTempPath} -i ${audioTempPath} -c:v copy -c:a aac -strict experimental ${resultVideoPath}`;
       const ffmpegProcess = spawn(ffmpegCommand, { shell: true });
 
+      let timeoutProcess = setTimeout(() => {
+        ffmpegProcess.kill();
+      }, 1000 * 60 * 5);
+
       ffmpegProcess.stderr.on("data", (data) => {
         const logString = data.toString().trim();
 
@@ -190,23 +194,27 @@ export default async function netflix({ name, year, language, outPath }) {
         } - ${percentage}%`;
       });
 
-      await new Promise((resolve, reject) => {
-        ffmpegProcess.on("close", (code) => {
-          if (code === 0) {
-            resolve();
-          }
-          reject();
+      try {
+        await new Promise((resolve, reject) => {
+          ffmpegProcess.on("close", (code) => {
+            if (code === 0) {
+              clearTimeout(timeoutProcess);
+              resolve();
+            }
+            reject();
+          });
         });
-      });
 
-      load.succeed(`[Netflix] Audio and video of trailer ${i + 1} merged`);
+        load.succeed(`[Netflix] Audio and video of trailer ${i + 1} merged`);
+      } catch (error) {
+        load.fail(`[Netflix] Something went wrong with trailer ${i + 1}`);
+      }
 
       load.start(`[Netflix] Deleting temp files of trailer ${i + 1}`);
       fs.unlinkSync(videoTempPath);
       fs.unlinkSync(audioTempPath);
       load.succeed(`[Netflix] Temp files of trailer ${i + 1} deleted`);
 
-      load.succeed(`[Netflix] Trailer ${i + 1} downloaded`);
       await page.reload();
     }
 
