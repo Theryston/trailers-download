@@ -3,6 +3,9 @@ import normalizeText from "../../utils/normalizeText.js";
 import loading from "loading-cli";
 import { prompt, print } from "gluegun";
 import downloadFromPlaylist from "./downloadFromPlaylist.js";
+import slug from "slug";
+import path from "node:path";
+import fs from "node:fs";
 
 const load = loading({
   color: "yellow",
@@ -148,9 +151,27 @@ export default async function appleTv({ name, year, language, outPath }) {
         return false;
       }
 
+      let videoTitle = await arrayLi[i].$(".typography-title-3.text-truncate");
+      videoTitle = await videoTitle.evaluate((el) => el.textContent);
+      let resultVideoPath = path.join(
+        outPath,
+        `${slug(videoTitle) || `trailer-${i + 1}`}.mp4`
+      );
+
+      if (fs.existsSync(resultVideoPath)) {
+        resultVideoPath = path.join(
+          outPath,
+          `${slug(videoTitle) + `-${i + 1}` || `trailer-${i + 1}`}.mp4`
+        );
+      }
+
       load.succeed(`[Apple TV] Videos url of trailer ${i + 1} found`);
 
-      await downloadFromPlaylist({ playlist, outPath, videoNumber: i + 1 });
+      await downloadFromPlaylist({
+        playlist,
+        resultVideoPath,
+        videoNumber: i + 1,
+      });
 
       load.succeed(`[Apple TV] Trailer ${i + 1} downloaded`);
 

@@ -13,7 +13,7 @@ const load = loading({
 
 export default async function downloadFromPlaylist({
   playlist,
-  outPath,
+  resultVideoPath,
   videoNumber,
 }) {
   try {
@@ -162,7 +162,6 @@ export default async function downloadFromPlaylist({
     load.start(`[Apple TV] Merging audio and video of trailer ${videoNumber}`);
     const videoFrames = await getTotalVideoFrames(videoTempPath);
 
-    const resultVideoPath = path.join(outPath, `trailer-${videoNumber}.mp4`);
     const ffmpegCommand = `${ffmpegPath} -i ${videoTempPath} -i ${audioTempPath} -c:v copy -c:a aac -strict experimental ${resultVideoPath}`;
     const ffmpegProcess = spawn(ffmpegCommand, { shell: true });
 
