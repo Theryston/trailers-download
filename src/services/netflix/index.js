@@ -98,10 +98,17 @@ export default async function netflix({ name, year, language, outPath }) {
       return false;
     }
 
-    load.succeed("[Netflix] Trailer found");
-
     let ul = await trailersSection.$("ul");
     let arrayLi = await ul.$$("li");
+
+    if (!arrayLi.length) {
+      browser.close();
+      load.info("[Netflix] Trailer not found. Try use another language");
+      load.stop();
+      return false;
+    }
+
+    load.succeed(`[Netflix] ${arrayLi.length} trailers found`);
 
     for (let i = 0; i < arrayLi.length; i++) {
       load.start(`[Netflix] Opening trailer ${i + 1}`);

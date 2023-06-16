@@ -89,10 +89,17 @@ export default async function appleTv({ name, year, language, outPath }) {
       return false;
     }
 
-    load.succeed("[Apple TV] Trailer found");
-
     let ul = await trailersSection.$("ul");
     let arrayLi = await ul.$$("li");
+
+    if (!arrayLi.length) {
+      browser.close();
+      load.info("[Apple TV] Trailer not found. Try use another language");
+      load.stop();
+      return false;
+    }
+
+    load.succeed(`[Apple TV] ${arrayLi.length} trailers found`);
 
     for (let i = 0; i < arrayLi.length; i++) {
       load.start(`[Apple TV] Opening trailer ${i + 1}`);
