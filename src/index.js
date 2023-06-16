@@ -26,7 +26,11 @@ if (!fs.existsSync(outPath)) {
   fs.mkdirSync(outPath);
 }
 
-const services = getServices();
+let services = getServices();
+
+if (parameters.service !== "All") {
+  services = services.filter((service) => service.name === parameters.service);
+}
 
 for (const service of services) {
   print.info(`Trying to find the trailer on ${service.name}`);

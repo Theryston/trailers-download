@@ -1,4 +1,5 @@
 import { prompt, print } from "gluegun";
+import getServices from "../services/index.js";
 
 export default async function collectParams() {
   print.info(
@@ -61,10 +62,19 @@ export default async function collectParams() {
     message: `What's the release year of the ${type}?`,
   });
 
+  const services = getServices();
+  const { service } = await prompt.ask({
+    type: "select",
+    name: "service",
+    message: "What service do you want?",
+    choices: ["All", ...services.map((service) => service.name)],
+  });
+
   return {
     type,
     language,
     name,
     year,
+    service,
   };
 }
