@@ -4,6 +4,8 @@ import loading from "loading-cli";
 import path from "node:path";
 import { spawn } from "child_process";
 import fs from "node:fs";
+import saveBlobFile from "../../utils/saveBlobFile.js";
+import getTotalVideoFrames from "../../utils/getTotalVideoFrames.js";
 
 const load = loading({
   color: "yellow",
@@ -173,7 +175,7 @@ export default async function downloadFromPlaylist({
 
       const frame = parseInt(logString.split("=")[1].split(" ")[1] || "0");
       const percentage = Math.round((frame / videoFrames) * 100);
-      load.text = `[Apple TV] Merging audio and video of trailer ${videoNumber} ${percentage}%`;
+      load.text = `[Apple TV] Merging audio and video of trailer ${videoNumber} - ${percentage}%`;
     });
 
     await new Promise((resolve, reject) => {
@@ -186,41 +188,13 @@ export default async function downloadFromPlaylist({
     });
 
     load.succeed(`[Apple TV] Audio and video of trailer ${videoNumber} merged`);
+
+    load.start(`[Apple TV] Removing temp files of trailer ${videoNumber}`);
+    fs.unlinkSync(videoTempPath);
+    fs.unlinkSync(audioTempPath);
+    load.succeed(`[Apple TV] Temp files of trailer ${videoNumber} removed`);
   } catch (error) {
     load.stop();
     throw error;
   }
-}
-
-async function getTotalVideoFrames(videoPath) {
-  const command = `${ffmpegPath} -i ${videoPath} -map 0:v:0 -c copy -f null -`;
-  const process = spawn(command, { shell: true });
-  let totalFrames = 0;
-  process.stderr.on("data", (data) => {
-    const logString = data.toString().trim();
-
-    if (!logString.startsWith("frame=")) {
-      return;
-    }
-
-    const frame = parseInt(logString.split("=")[1].split(" ")[1] || "0");
-    totalFrames = frame;
-  });
-
-  await new Promise((resolve, reject) => {
-    process.on("close", (code) => {
-      if (code === 0) {
-        resolve();
-      }
-      reject();
-    });
-  });
-
-  return totalFrames;
-}
-
-async function saveBlobFile(blob, output) {
-  const arrayBuffer = await blob.arrayBuffer();
-  const buffer = Buffer.from(arrayBuffer);
-  fs.writeFileSync(output, buffer);
 }

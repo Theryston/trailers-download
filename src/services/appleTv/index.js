@@ -151,7 +151,7 @@ export default async function appleTv({ name, year, language, outPath }) {
     }
 
     await browser.close();
-    load.succeed("[Apple TV] Browser closed");
+    load.succeed("[Apple TV] All trailers downloaded");
     return true;
   } catch (error) {
     browser.close();
