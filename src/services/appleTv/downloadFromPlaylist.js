@@ -114,7 +114,6 @@ export default async function downloadFromPlaylist({
     const tempDir = path.join(process.cwd(), "temp");
 
     if (!fs.existsSync(tempDir)) {
-      console.log("Criando pasta temporária para armazenar os arquivos");
       fs.mkdirSync(tempDir);
     }
 
