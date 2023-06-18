@@ -4,6 +4,7 @@ import getServices from "./services/index.js";
 import collectParams from "./terminal/collectParams.js";
 import slug from "slug";
 import fs from "node:fs";
+import handleCrop from "./handleCrop.js";
 
 print.info("Welcome to the Trailers Download");
 const parameters = await collectParams();
@@ -43,6 +44,11 @@ for (const service of services) {
 }
 
 if (hasFound) {
+  await handleCrop({
+    aspectRadios: parameters.aspectRadios,
+    outPath,
+  });
+
   const tempDir = path.join(process.cwd(), "temp");
   if (fs.existsSync(tempDir)) {
     fs.rmSync(tempDir, { recursive: true });

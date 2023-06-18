@@ -70,11 +70,29 @@ export default async function collectParams() {
     choices: ["All", ...services.map((service) => service.name)],
   });
 
+  const { aspectRadios } = await prompt.ask({
+    type: "multiselect",
+    name: "aspectRadios",
+    message: "What aspect radios do you want?",
+    choices: [
+      "1:1",
+      "4:3",
+      "5:4",
+      "16:9",
+      "21:9",
+      "3:4",
+      "4:5",
+      "9:16",
+      "9:21",
+    ],
+  });
+
   return {
     type,
     language,
     name,
     year,
     service,
+    aspectRadios,
   };
 }
