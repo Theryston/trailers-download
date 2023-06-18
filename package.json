@@ -12,6 +12,7 @@
   "license": "ISC",
   "dependencies": {
     "ffmpeg-static": "^5.1.0",
+    "ffprobe-static": "^3.1.0",
     "gluegun": "^5.1.2",
     "loading-cli": "^1.1.0",
     "m3u8-parser": "^6.2.0",
