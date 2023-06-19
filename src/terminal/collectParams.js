@@ -40,7 +40,7 @@ export default async function collectParams() {
         message: "Portuguese (Brazil)",
       },
       {
-        name: "EN",
+        name: "US",
         message: "English",
       },
       {
