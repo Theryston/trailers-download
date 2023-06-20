@@ -126,7 +126,7 @@ export default async function downloadFromPlaylist({
     load.start(
       `[Apple TV] Downloading audio and video of trailer ${videoNumber}`
     );
-    let videoBlob = new Blob();
+    const videoTempPath = path.join(tempDir, `${Date.now()}-video.mp4`);
     for (let i = 0; i < videoPartsUrl.length; i++) {
       load.text = `[Apple TV] Downloading video part ${i + 1}/${
         videoPartsUrl.length
@@ -134,11 +134,9 @@ export default async function downloadFromPlaylist({
       const videoPartUrl = videoPartsUrl[i];
       const response = await fetch(videoPartUrl);
       const partBlob = await response.arrayBuffer();
-      videoBlob = new Blob([videoBlob, partBlob], { type: "video/mp4" });
+      const partBuffer = Buffer.from(partBlob);
+      fs.appendFileSync(videoTempPath, partBuffer);
     }
-
-    const videoTempPath = path.join(tempDir, `${Date.now()}-video.mp4`);
-    await saveBlobFile(videoBlob, videoTempPath);
 
     load.succeed(`[Apple TV] Video of trailer ${videoNumber} downloaded`);
 
