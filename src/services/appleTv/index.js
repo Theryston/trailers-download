@@ -59,9 +59,19 @@ export default async function appleTv({ name, year, language, outPath }) {
     );
 
     if (!confirmedPage) {
-      browser.close();
-      print.info("[Apple TV] Please, try again with the correct name and year");
-      return false;
+      const { customPage } = await prompt.ask({
+        type: "input",
+        name: "customPage",
+        message: "Enter the correct page:",
+      });
+
+      if (!customPage || !customPage.length || !customPage.startsWith("http")) {
+        browser.close();
+        print.info("[Apple TV] Please, try again with the correct page");
+        return false;
+      }
+
+      program.href = customPage;
     }
 
     load.start("[Apple TV] Opening the Apple TV page");

@@ -65,9 +65,19 @@ export default async function netflix({ name, year, language, outPath }) {
     );
 
     if (!confirmedPage) {
-      browser.close();
-      print.info("[Netflix] Please, try again with the correct name and year");
-      return false;
+      const { customPage } = await prompt.ask({
+        type: "input",
+        name: "customPage",
+        message: "Enter the correct page:",
+      });
+
+      if (!customPage || !customPage.length || !customPage.startsWith("http")) {
+        browser.close();
+        print.info("[Netflix] Please, try again with the correct page");
+        return false;
+      }
+
+      program.href = customPage;
     }
 
     load.start("[Netflix] Opening the Netflix page");
