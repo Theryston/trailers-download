@@ -120,6 +120,38 @@ export default async function netflix({ name, year, language, outPath }) {
 
     load.succeed(`[Netflix] ${arrayLi.length} trailers found`);
 
+    load.start("[Netflix] Preparing requests observer");
+    await page.setRequestInterception(true);
+
+    page.on("request", (request) => {
+      if (
+        request.url().indexOf("https://www.netflix.com/playapi") !== -1 &&
+        request.method() === "POST"
+      ) {
+        const body = JSON.parse(request.postData());
+        const hasProfile = body.params.profiles.some(
+          (profile) => profile === "playready-h264mpl40-dash"
+        );
+
+        if (hasProfile) {
+          request.continue();
+        } else {
+          request.continue({
+            postData: JSON.stringify({
+              ...body,
+              params: {
+                ...body.params,
+                profiles: [...body.params.profiles, "playready-h264mpl40-dash"],
+              },
+            }),
+          });
+        }
+      } else {
+        request.continue();
+      }
+    });
+    load.succeed("[Netflix] Requests observer ready");
+
     for (let i = 0; i < arrayLi.length; i++) {
       load.start(`[Netflix] Opening trailer ${i + 1}`);
       trailersSection = await page.$(
@@ -155,10 +187,15 @@ export default async function netflix({ name, year, language, outPath }) {
 
       const body = await response.json();
       const audioUrl = body.result.audio_tracks[0].streams[0].urls[0].url;
-      const videoMaxCroppedWidth = body.result.video_tracks[0].maxCroppedWidth;
-      const videoUrl = body.result.video_tracks[0].streams.find(
-        (stream) => stream.crop_w === videoMaxCroppedWidth
-      ).urls[0].url;
+      const biggestVideo = body.result.video_tracks[0].streams.reduce(
+        (prev, current) => {
+          if (current.crop_w > prev.crop_w) {
+            return current;
+          }
+          return prev;
+        }
+      );
+      const videoUrl = biggestVideo.urls[0].url;
 
       load.succeed(`[Netflix] Trailer ${i + 1} loaded`);
 
