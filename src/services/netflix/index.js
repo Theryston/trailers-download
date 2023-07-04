@@ -46,29 +46,20 @@ export default async function netflix({ name, year, language, outPath }) {
       );
     });
 
-    const program = googleResults.find((result) => {
+    let program = googleResults.find((result) => {
       const normalizedText = normalizeText(result.text);
       const normalizedName = normalizeText(name);
       return normalizedText === normalizedName;
     });
 
+    let ignoreConfirmation = false;
     if (!program) {
-      browser.close();
-      load.info("[Netflix] Netflix page not found");
-      return false;
-    }
+      load.fail("[Netflix] Netflix page not found");
 
-    load.succeed(`[Netflix] Netflix page found: ${program.href}`);
-
-    const confirmedPage = await prompt.confirm(
-      "[Netflix] Is this the correct page?"
-    );
-
-    if (!confirmedPage) {
       const { customPage } = await prompt.ask({
         type: "input",
         name: "customPage",
-        message: "Enter the correct page:",
+        message: "Page not found, enter a custom:",
       });
 
       if (!customPage || !customPage.length || !customPage.startsWith("http")) {
@@ -77,7 +68,40 @@ export default async function netflix({ name, year, language, outPath }) {
         return false;
       }
 
-      program.href = customPage;
+      program = {
+        href: customPage,
+        text: "Custom page",
+      };
+
+      ignoreConfirmation = true;
+    }
+
+    if (!ignoreConfirmation) {
+      load.succeed(`[Netflix] Netflix page found: ${program.href}`);
+
+      const confirmedPage = await prompt.confirm(
+        "[Netflix] Is this the correct page?"
+      );
+
+      if (!confirmedPage) {
+        const { customPage } = await prompt.ask({
+          type: "input",
+          name: "customPage",
+          message: "Enter the correct page:",
+        });
+
+        if (
+          !customPage ||
+          !customPage.length ||
+          !customPage.startsWith("http")
+        ) {
+          browser.close();
+          print.info("[Netflix] Please, try again with the correct page");
+          return false;
+        }
+
+        program.href = customPage;
+      }
     }
 
     load.start("[Netflix] Opening the Netflix page");
