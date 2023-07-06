@@ -40,29 +40,20 @@ export default async function appleTv({ name, year, language, outPath }) {
       );
     });
 
-    const program = googleResults.find((result) => {
+    let program = googleResults.find((result) => {
       const normalizedText = normalizeText(result.text);
       const normalizedName = normalizeText(name);
       return normalizedText === normalizedName;
     });
 
+    let ignoreConfirmation = false;
     if (!program) {
-      browser.close();
-      load.info("[Apple TV] Apple TV page not found");
-      return false;
-    }
+      load.fail("[Apple TV] Apple Tv page not found");
 
-    load.succeed(`[Apple TV] Apple TV page found: ${program.href}`);
-
-    const confirmedPage = await prompt.confirm(
-      "[Apple TV] Is this the correct page?"
-    );
-
-    if (!confirmedPage) {
       const { customPage } = await prompt.ask({
         type: "input",
         name: "customPage",
-        message: "Enter the correct page:",
+        message: "Page not found, enter a custom:",
       });
 
       if (!customPage || !customPage.length || !customPage.startsWith("http")) {
@@ -71,7 +62,40 @@ export default async function appleTv({ name, year, language, outPath }) {
         return false;
       }
 
-      program.href = customPage;
+      program = {
+        href: customPage,
+        text: "Custom page",
+      };
+
+      ignoreConfirmation = true;
+    }
+
+    if (!ignoreConfirmation) {
+      load.succeed(`[Apple TV] Apple TV page found: ${program.href}`);
+
+      const confirmedPage = await prompt.confirm(
+        "[Apple TV] Is this the correct page?"
+      );
+
+      if (!confirmedPage) {
+        const { customPage } = await prompt.ask({
+          type: "input",
+          name: "customPage",
+          message: "Enter the correct page:",
+        });
+
+        if (
+          !customPage ||
+          !customPage.length ||
+          !customPage.startsWith("http")
+        ) {
+          browser.close();
+          print.info("[Apple TV] Please, try again with the correct page");
+          return false;
+        }
+
+        program.href = customPage;
+      }
     }
 
     load.start("[Apple TV] Opening the Apple TV page");
