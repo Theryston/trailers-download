@@ -33,9 +33,15 @@ export default async function downloadFromPlaylist({
 
     const playlistJson = parser.manifest.playlists;
 
-    let videoPlaylistM3u8 = playlistJson.find((playlist) => {
+    let eligiblePlaylists = playlistJson.filter((playlist) => {
       return playlist.attributes.RESOLUTION.width >= 1900;
     });
+
+    eligiblePlaylists.sort((a, b) => {
+      return b.attributes.BANDWIDTH - a.attributes.BANDWIDTH;
+    });
+
+    let videoPlaylistM3u8 = eligiblePlaylists[0];
 
     if (!videoPlaylistM3u8) {
       videoPlaylistM3u8 = playlistJson.reduce((acc, playlist) => {
@@ -49,7 +55,9 @@ export default async function downloadFromPlaylist({
     }
 
     const audioPlaylistM3u8Language =
-      parser.manifest.mediaGroups.AUDIO[videoPlaylistM3u8.attributes.AUDIO];
+      parser.manifest.mediaGroups.AUDIO[
+        Object.keys(parser.manifest.mediaGroups.AUDIO)[0]
+      ];
 
     let audioPlaylistM3u8 = Object.values(audioPlaylistM3u8Language).find(
       (al) => al.language === "pt-BR"
