@@ -134,6 +134,16 @@ export default async function netflix({ name, year, language, outPath }) {
 
     let ul = await trailersSection.$("ul");
     let arrayLi = await ul.$$("li");
+    const liOrder = [];
+
+    for (let i = 0; i < arrayLi.length; i++) {
+      let videoTitle = await arrayLi[i].$(".additional-video-title");
+      videoTitle = await videoTitle.evaluate((el) => el.textContent);
+      liOrder.push({
+        videoTitle,
+        index: i,
+      });
+    }
 
     if (!arrayLi.length) {
       browser.close();
@@ -185,6 +195,21 @@ export default async function netflix({ name, year, language, outPath }) {
       ul = await trailersSection.$("ul");
       arrayLi = await ul.$$("li");
 
+      for (let i = 0; i < arrayLi.length; i++) {
+        let videoTitle = await arrayLi[i].$(".additional-video-title");
+        videoTitle = await videoTitle.evaluate((el) => el.textContent);
+
+        let correspondingOrder = liOrder.find(
+          (order) => order.videoTitle === videoTitle
+        );
+
+        if (correspondingOrder) {
+          arrayLi[i].orderIndex = correspondingOrder.index;
+        }
+      }
+
+      arrayLi.sort((a, b) => a.orderIndex - b.orderIndex);
+
       await page.evaluate(() => {
         const trailersSection = document.querySelector(
           ".nmtitle-section.section-additional-videos"
@@ -213,7 +238,7 @@ export default async function netflix({ name, year, language, outPath }) {
       const audioUrl = body.result.audio_tracks[0].streams[0].urls[0].url;
       const biggestVideo = body.result.video_tracks[0].streams.reduce(
         (prev, current) => {
-          if (current.crop_w > prev.crop_w) {
+          if (current.bitrate > prev.bitrate) {
             return current;
           }
           return prev;
