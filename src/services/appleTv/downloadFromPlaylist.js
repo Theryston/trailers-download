@@ -171,7 +171,7 @@ export default async function downloadFromPlaylist({
 		load.start(`[Apple TV] Merging audio and video of trailer ${videoNumber}`);
 		const videoFrames = await getTotalVideoFrames(videoTempPath);
 
-		const ffmpegCommand = `${ffmpegPath} -i ${videoTempPath} -i ${audioTempPath} -c:v copy -c:a aac -strict experimental ${resultVideoPath}`;
+		const ffmpegCommand = `${ffmpegPath} -i ${videoTempPath} -i ${audioTempPath} -c:v libx264 -c:a aac -strict experimental ${resultVideoPath}`;
 		const ffmpegProcess = spawn(ffmpegCommand, { shell: true });
 
 		ffmpegProcess.stderr.on('data', (data) => {
