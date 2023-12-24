@@ -33,7 +33,10 @@ export default async function downloadFromPlaylist({
 
 		let playlistJson = parser.manifest.playlists;
 		playlistJson = playlistJson.filter((playlist) => {
-			return playlist.attributes['VIDEO-RANGE'] === 'SDR';
+			return (
+				playlist.attributes['VIDEO-RANGE'] === 'SDR' &&
+				/avc1\.[\dA-Fa-f]+/.test(playlist.attributes['CODECS'])
+			);
 		});
 
 		let eligiblePlaylists = playlistJson.filter((playlist) => {
